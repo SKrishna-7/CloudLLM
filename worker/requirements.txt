@@ -1,0 +1,8 @@
+redis==5.0.4
+boto3==1.34.120
+torch
+diffusers
+transformers
+psycopg2-binary
+Pillow
+accelerate

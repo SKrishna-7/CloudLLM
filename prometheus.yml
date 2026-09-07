@@ -1,0 +1,29 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'gateway'
+    metrics_path: '/metrics'
+    static_configs:
+      # host.docker.internal allows Docker to hit the host machine where FastAPI runs on 8000
+      - targets: ['host.docker.internal:8000']
+        labels:
+          service: 'fastapi-gateway'
+
+  - job_name: 'scheduler'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['host.docker.internal:8080']
+        labels:
+          service: 'go-scheduler'
+
+  - job_name: 'worker'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['host.docker.internal:8001']
+        labels:
+          service: 'python-worker'
