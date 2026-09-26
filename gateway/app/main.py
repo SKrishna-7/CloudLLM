@@ -20,6 +20,7 @@ try:
 except Exception as e:
     print(f"Warning: Failed to initialize Cloud Trace exporter: {e}")
 trace.set_tracer_provider(provider)
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from app.core.limiter import limiter
 
