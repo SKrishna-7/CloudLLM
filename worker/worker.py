@@ -93,8 +93,8 @@ if os.path.exists(env_path):
 
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
-# Initialize Model
-model_id = "Tongyi-MAI/Z-Image"
+# Initialize Model (SDXL fits comfortably in 16GB VRAM using bfloat16)
+model_id = "stabilityai/stable-diffusion-xl-base-1.0"
 logger.info(f"Loading {model_id} model from Hugging Face...")
 device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
 
