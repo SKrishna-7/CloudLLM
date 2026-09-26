@@ -10,3 +10,9 @@ opentelemetry-api
 opentelemetry-sdk
 opentelemetry-instrumentation-fastapi
 opentelemetry-exporter-gcp-trace
+fastapi
+uvicorn
+pydantic
+prometheus-client
+nvidia-ml-py
+python-dotenv
