@@ -17,3 +17,4 @@ opentelemetry-api
 opentelemetry-sdk
 opentelemetry-instrumentation-fastapi
 opentelemetry-exporter-gcp-trace
+prometheus-fastapi-instrumentator==7.0.0
