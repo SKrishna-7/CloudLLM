@@ -16,10 +16,9 @@ resource = Resource(attributes={
 provider = TracerProvider(resource=resource)
 try:
     processor = BatchSpanProcessor(CloudTraceSpanExporter())
+    provider.add_span_processor(processor)
 except Exception as e:
-    from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
-    processor = BatchSpanProcessor(OTLPSpanExporter(endpoint="http://localhost:4318/v1/traces"))
-provider.add_span_processor(processor)
+    print(f"Warning: Failed to initialize Cloud Trace exporter: {e}")
 trace.set_tracer_provider(provider)
 
 from slowapi import _rate_limit_exceeded_handler
