@@ -3,23 +3,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router as api_router
 from app.api.admin import router as admin_router
 from prometheus_fastapi_instrumentator import Instrumentator
-from opentelemetry import trace
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
-from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-from opentelemetry.sdk.resources import Resource, SERVICE_NAME
+# Tracing temporarily disabled to isolate Cloud Run startup issues
+# from opentelemetry import trace
+# from opentelemetry.sdk.trace import TracerProvider
+# from opentelemetry.sdk.trace.export import BatchSpanProcessor
+# from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
+# from opentelemetry.sdk.resources import Resource, SERVICE_NAME
 
-resource = Resource(attributes={
-    SERVICE_NAME: "fastapi-gateway"
-})
-provider = TracerProvider(resource=resource)
-try:
-    processor = BatchSpanProcessor(CloudTraceSpanExporter())
-    provider.add_span_processor(processor)
-except Exception as e:
-    print(f"Warning: Failed to initialize Cloud Trace exporter: {e}")
-trace.set_tracer_provider(provider)
+# resource = Resource(attributes={
+#     SERVICE_NAME: "fastapi-gateway"
+# })
+# provider = TracerProvider(resource=resource)
+# trace.set_tracer_provider(provider)
 
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -29,7 +24,7 @@ app = FastAPI(title="Split-Plane Image Generation API")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-FastAPIInstrumentor.instrument_app(app)
+# FastAPIInstrumentor.instrument_app(app)
 
 app.add_middleware(
     CORSMiddleware,
