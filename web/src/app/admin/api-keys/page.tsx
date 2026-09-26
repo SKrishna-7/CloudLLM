@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useAuth } from "@clerk/nextjs";
 import { RefreshCw, Key, ShieldOff, AlertTriangle } from "lucide-react";
@@ -18,9 +18,9 @@ export default function ApiKeysPage() {
     queryFn: async () => {
       const token = await getToken();
       if (!token) throw new Error("No token");
-      return api.getAdminApiKeys(token, page);
+      return api.getAdminApiKeys(token, page) as any;
     },
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   const revokeMutation = useMutation({
@@ -30,7 +30,7 @@ export default function ApiKeysPage() {
       return api.revokeAdminApiKey(keyId, token);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(["adminApiKeys"]);
+      queryClient.invalidateQueries({ queryKey: ["adminApiKeys"] });
       setRevokingId(null);
     }
   });
@@ -158,17 +158,17 @@ export default function ApiKeysPage() {
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setRevokingId(null)}
-                disabled={revokeMutation.isLoading}
+                disabled={revokeMutation.isPending}
                 className="px-4 py-2 text-sm font-medium text-neutral-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={() => revokeMutation.mutate(revokingId)}
-                disabled={revokeMutation.isLoading}
+                disabled={revokeMutation.isPending}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors disabled:opacity-50"
               >
-                {revokeMutation.isLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <ShieldOff className="w-4 h-4" />}
+                {revokeMutation.isPending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <ShieldOff className="w-4 h-4" />}
                 Yes, Revoke Key
               </button>
             </div>

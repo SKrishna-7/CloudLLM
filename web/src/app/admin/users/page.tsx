@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useAuth } from "@clerk/nextjs";
 import { RefreshCw, Search } from "lucide-react";
@@ -18,9 +18,9 @@ export default function UsersPage() {
     queryFn: async () => {
       const token = await getToken();
       if (!token) throw new Error("No token");
-      return api.getAdminUsers(token, page, search);
+      return api.getAdminUsers(token, page, search) as any;
     },
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   const updateRoleMutation = useMutation({
@@ -30,7 +30,7 @@ export default function UsersPage() {
       return api.updateUserRole(userId, role, token);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(["adminUsers"]);
+      queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
     }
   });
 
@@ -99,7 +99,7 @@ export default function UsersPage() {
                       <select 
                         value={user.role}
                         onChange={(e) => updateRoleMutation.mutate({ userId: user.id, role: e.target.value })}
-                        disabled={updateRoleMutation.isLoading}
+                        disabled={updateRoleMutation.isPending}
                         className="bg-black border border-white/10 rounded px-2 py-1 text-xs text-neutral-300 focus:outline-none focus:border-white/30 disabled:opacity-50"
                       >
                         <option value="user">User</option>

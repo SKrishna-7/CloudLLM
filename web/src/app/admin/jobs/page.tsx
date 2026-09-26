@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useAuth } from "@clerk/nextjs";
 import { RefreshCw, Search, Clock, Zap } from "lucide-react";
@@ -24,9 +24,9 @@ export default function JobsPage() {
     queryFn: async () => {
       const token = await getToken();
       if (!token) throw new Error("No token");
-      return api.getAdminJobs(token, page, search);
+      return api.getAdminJobs(token, page, search) as any;
     },
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   return (
