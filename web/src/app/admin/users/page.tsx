@@ -34,6 +34,27 @@ export default function UsersPage() {
     }
   });
 
+  const updateCreditsMutation = useMutation({
+    mutationFn: async ({ userId, credits }: { userId: string, credits: number }) => {
+      const token = await getToken();
+      if (!token) throw new Error("No token");
+      return api.updateUserCredits(userId, credits, token);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["adminUsers"] });
+    }
+  });
+
+  const handleUpdateCredits = (userId: string, currentCredits: number) => {
+    const newVal = window.prompt("Enter new credits balance:", currentCredits.toString());
+    if (newVal !== null) {
+      const parsed = parseInt(newVal, 10);
+      if (!isNaN(parsed) && parsed >= 0) {
+        updateCreditsMutation.mutate({ userId, credits: parsed });
+      }
+    }
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -109,7 +130,16 @@ export default function UsersPage() {
                       </select>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-400">
-                      {user.credits_balance}
+                      <div className="flex items-center gap-2">
+                        <span>{user.credits_balance}</span>
+                        <button 
+                          onClick={() => handleUpdateCredits(user.id, user.credits_balance)}
+                          disabled={updateCreditsMutation.isPending}
+                          className="text-xs text-blue-400 hover:text-blue-300 transition-colors bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20 disabled:opacity-50"
+                        >
+                          Edit
+                        </button>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-400">
                       {user.job_count}

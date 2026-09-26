@@ -95,6 +95,13 @@ export const api = {
     return data;
   },
 
+  async updateUserCredits(userId: string, credits_balance: number, token: string) {
+    const { data } = await apiClient.patch(`/v1/admin/users/${userId}/credits`, { credits_balance }, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return data;
+  },
+
   async getAdminJobs(token: string, page: number = 1, search: string = "") {
     const { data } = await apiClient.get(`/v1/admin/jobs?page=${page}${search ? `&search=${search}` : ''}`, {
       headers: { Authorization: `Bearer ${token}` }

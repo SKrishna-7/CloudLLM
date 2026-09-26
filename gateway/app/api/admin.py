@@ -21,6 +21,9 @@ class PaginationQuery(BaseModel):
 class RoleUpdateRequest(BaseModel):
     role: str
 
+class CreditsUpdateRequest(BaseModel):
+    credits_balance: int
+
 @router.get("/v1/admin/overview")
 async def get_overview(
     db: AsyncSession = Depends(get_db),
@@ -126,6 +129,21 @@ async def update_user_role(
     user.role = data.role
     await db.commit()
     return {"status": "success", "role": user.role}
+
+@router.patch("/v1/admin/users/{user_id}/credits")
+async def update_user_credits(
+    user_id: uuid.UUID,
+    data: CreditsUpdateRequest,
+    db: AsyncSession = Depends(get_db),
+    current_admin: User = Depends(admin_auth)
+):
+    user = await db.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    user.credits_balance = data.credits_balance
+    await db.commit()
+    return {"status": "success", "credits_balance": user.credits_balance}
 
 @router.get("/v1/admin/jobs")
 async def get_jobs(
