@@ -1,13 +1,22 @@
 #!/bin/bash
 set -e
 
+echo "Cleaning up any old processes..."
+pkill -f "uvicorn worker:app" || true
+pkill -f "cloudflared tunnel" || true
+sleep 1
+
 echo "Starting GPU Worker on port 8000..."
 uvicorn worker:app --host 0.0.0.0 --port 8000 &
 UVICORN_PID=$!
 
-echo "Downloading cloudflared (Cloudflare Quick Tunnels)..."
-wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -O cloudflared
-chmod +x cloudflared
+if [ ! -f "cloudflared" ]; then
+    echo "Downloading cloudflared (Cloudflare Quick Tunnels)..."
+    wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -O cloudflared
+    chmod +x cloudflared
+else
+    echo "cloudflared binary already exists, skipping download."
+fi
 
 echo "Starting Cloudflare Quick Tunnel to expose port 8000..."
 ./cloudflared tunnel --url http://localhost:8000 > tunnel.log 2>&1 &
