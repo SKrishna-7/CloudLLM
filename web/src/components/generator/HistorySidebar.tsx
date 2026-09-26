@@ -54,13 +54,13 @@ export function HistorySidebar({ activeChatId, onSelectChat }: HistorySidebarPro
             Home
           </Button>
         </Link>
-        <Link href="/library">
+        <Link href="/dashboard">
           <Button 
             variant="ghost" 
             className="w-full justify-start gap-3 hover:bg-zinc-200/50 dark:hover:bg-zinc-900 text-zinc-600 dark:text-zinc-300 font-normal rounded-xl h-12 transition-colors"
           >
             <FolderOpen className="w-5 h-5" />
-            Library
+            Dashboard
           </Button>
         </Link>
       </div>

@@ -179,7 +179,7 @@ async def get_jobs(
             "id": str(job.id),
             "user_email": email,
             "prompt": job.prompt,
-            "status": job.status.value,
+            "status": job.status.value if hasattr(job.status, 'value') else job.status,
             "source": job.source,
             "created_at": job.created_at,
             "completed_at": job.completed_at,
