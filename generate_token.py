@@ -21,9 +21,9 @@ def generate_token():
     # In dependencies.py, I just did: key_hash = hashlib.sha256(api_key.encode("utf-8")).hexdigest()
     # If they send 'Bearer sk-test-xxx', api_key will be 'Bearer sk-test-xxx'.
     
-    curl_header = f"Bearer {raw_token}"
+    key_hash = hashlib.sha256(raw_token.encode("utf-8")).hexdigest()
     
-    key_hash = hashlib.sha256(curl_header.encode("utf-8")).hexdigest()
+    curl_header = f"Bearer {raw_token}"
     
     # Generate UUIDs
     user_id = str(uuid.uuid4())

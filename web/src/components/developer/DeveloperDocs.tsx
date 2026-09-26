@@ -31,26 +31,6 @@ export function DeveloperDocs() {
         </div>
       </section>
 
-      {/* Rate Limits */}
-      <section className="space-y-4">
-        <h4 className="text-xl font-semibold text-white">Rate Limits & Credits</h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="p-5 bg-zinc-950 border-zinc-800">
-            <h5 className="font-medium text-white mb-2">Rate Limiting</h5>
-            <p className="text-sm text-zinc-400">
-              API requests are limited to <strong className="text-zinc-200">60 requests per minute</strong> per IP address. 
-              Exceeding this limit will result in a <code className="text-blue-400">429 Too Many Requests</code> response.
-            </p>
-          </Card>
-          <Card className="p-5 bg-zinc-950 border-zinc-800">
-            <h5 className="font-medium text-white mb-2">Credit Usage</h5>
-            <p className="text-sm text-zinc-400">
-              Each successful image generation deducts <strong className="text-zinc-200">1 credit</strong> from your balance. 
-              Polling for job status is completely free.
-            </p>
-          </Card>
-        </div>
-      </section>
 
       {/* Endpoints */}
       <section className="space-y-8">

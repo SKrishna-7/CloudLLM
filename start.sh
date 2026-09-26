@@ -53,6 +53,8 @@ echo "🌐 Starting FastAPI Gateway (Port 8000)..."
 echo "⚙️ Starting Go Scheduler..."
 (
     cd scheduler
+    export WEBHOOK_SECRET="super_secret_webhook_key_for_local_dev"
+    export WORKER_POOL_SIZE="5"
     go run cmd/main.go 2>&1 | tee ../scheduler.log
 ) &
 

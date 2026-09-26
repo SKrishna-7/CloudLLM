@@ -28,12 +28,77 @@ func NewConsumer(redisURL string) (*Consumer, error) {
 	if err != nil {
 		return nil, err
 	}
+	
+	// Explicit connection pool settings (Gap 1)
+	opt.PoolSize = 20
+	opt.MinIdleConns = 5
+	
 	client := redis.NewClient(opt)
 	return &Consumer{client: client}, nil
 }
 
 func (c *Consumer) GetClient() *redis.Client {
 	return c.client
+}
+
+// StartWatchdog periodically checks the processing queue for stale jobs (Gap 2)
+func (c *Consumer) StartWatchdog(ctx context.Context, queueName string) {
+	go func() {
+		ticker := time.NewTicker(5 * time.Minute)
+		defer ticker.Stop()
+		
+		// Track when we first saw a job stuck in processing
+		stuckJobs := make(map[string]time.Time)
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				processingQueue := queueName + "_processing"
+				
+				// Get all items currently in processing queue
+				items, err := c.client.LRange(ctx, processingQueue, 0, -1).Result()
+				if err != nil && err != redis.Nil {
+					slog.Error("DLQ Watchdog failed to read processing queue", "error", err)
+					continue
+				}
+
+				currentJobs := make(map[string]bool)
+				for _, payload := range items {
+					var job Job
+					if err := json.Unmarshal([]byte(payload), &job); err != nil {
+						continue
+					}
+					currentJobs[job.JobID] = true
+
+					if firstSeen, exists := stuckJobs[job.JobID]; exists {
+						// If it's been stuck for more than 15 minutes, recover it
+						if time.Since(firstSeen) > 15*time.Minute {
+							slog.Warn("DLQ Watchdog found stale job. Recovering to main queue.", "job_id", job.JobID)
+							
+							// Push back to main queue
+							c.client.LPush(ctx, queueName, payload)
+							// Remove from processing
+							c.client.LRem(ctx, processingQueue, 1, payload)
+							
+							delete(stuckJobs, job.JobID)
+						}
+					} else {
+						// First time seeing this job in processing queue
+						stuckJobs[job.JobID] = time.Now()
+					}
+				}
+
+				// Cleanup jobs that were successfully processed and removed
+				for jobID := range stuckJobs {
+					if !currentJobs[jobID] {
+						delete(stuckJobs, jobID)
+					}
+				}
+			}
+		}
+	}()
 }
 
 func (c *Consumer) StartPolling(ctx context.Context, queueName string) <-chan Job {

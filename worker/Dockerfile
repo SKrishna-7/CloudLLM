@@ -8,8 +8,19 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy worker application files
-COPY worker.py storage.py ./
+# Copy ALL worker application files (including logger.py)
+COPY worker.py storage.py logger.py ./
 
-# Default command to run the daemon
-CMD ["python", "worker.py"]
+# Create non-root user for security
+RUN useradd -m -r appuser && chown -R appuser:appuser /app
+USER appuser
+
+# Expose the worker HTTP port
+EXPOSE 8002
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')" || exit 1
+
+# Run the FastAPI server via uvicorn
+CMD ["python", "-m", "uvicorn", "worker:app", "--host", "0.0.0.0", "--port", "8002"]

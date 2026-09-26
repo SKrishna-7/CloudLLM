@@ -7,12 +7,17 @@ services:
       POSTGRES_PASSWORD: split_password
       POSTGRES_DB: split_db
     ports:
-    - 5433:5432
+    - "127.0.0.1:5433:5432"
+    volumes:
+    - postgres_data:/var/lib/postgresql/data
   redis:
     image: redis:7
+    command: redis-server --requirepass cloudllm_redis_pass
     ports:
-    - 6380:6379
+    - "127.0.0.1:6380:6379"
     restart: always
+    volumes:
+    - redis_data:/data
   minio:
     image: minio/minio
     command: server /data --console-address ":9001"
@@ -20,9 +25,11 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
     ports:
-    - 9000:9000
-    - 9001:9001
+    - "127.0.0.1:9000:9000"
+    - "127.0.0.1:9001:9001"
     restart: always
+    volumes:
+    - minio_data:/data
   prometheus:
     image: prom/prometheus:latest
     volumes:
@@ -35,12 +42,12 @@ services:
   grafana:
     image: grafana/grafana:latest
     ports:
-    - 3001:3000
+    - "127.0.0.1:3001:3000"
     environment:
     - GF_SECURITY_ADMIN_PASSWORD=admin
     - GF_SECURITY_ALLOW_EMBEDDING=true
-    - GF_AUTH_ANONYMOUS_ENABLED=true
-    - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    - GF_AUTH_ANONYMOUS_ENABLED=false
+    - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
     depends_on:
     - prometheus
     - loki
@@ -69,3 +76,8 @@ services:
     - 4317:4317
     - 4318:4318
     restart: always
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:

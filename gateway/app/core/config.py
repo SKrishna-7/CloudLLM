@@ -2,7 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+asyncpg://split_user:split_password@localhost:5433/split_db"
-    REDIS_URL: str = "redis://localhost:6380/0"
+    REDIS_URL: str = "redis://:cloudllm_redis_pass@localhost:6380/0"
     MINIO_URL: str = "http://localhost:9000"
     MINIO_ACCESS_KEY: str = "minioadmin"
     MINIO_SECRET_KEY: str = "minioadmin"

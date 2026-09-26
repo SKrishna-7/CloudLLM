@@ -24,6 +24,6 @@ scrape_configs:
   - job_name: 'worker'
     metrics_path: '/metrics'
     static_configs:
-      - targets: ['host.docker.internal:8001']
+      - targets: ['host.docker.internal:8002']
         labels:
           service: 'python-worker'

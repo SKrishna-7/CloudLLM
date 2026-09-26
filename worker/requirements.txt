@@ -6,3 +6,7 @@ transformers
 psycopg2-binary
 Pillow
 accelerate
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-instrumentation-fastapi
+opentelemetry-exporter-gcp-trace

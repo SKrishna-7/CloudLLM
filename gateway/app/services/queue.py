@@ -18,6 +18,8 @@ async def push_job_to_queue(job_id: uuid.UUID, request: JobCreateRequest, redis_
         "guidance_scale": request.guidance_scale,
         "width": request.width,
         "height": request.height,
+        "init_image_url": request.init_image_url,
+        "strength": request.strength,
     }
     
     # Inject OTel trace context into payload headers

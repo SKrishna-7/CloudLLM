@@ -16,7 +16,7 @@ export function Sidebar() {
   const navigation = [
     { name: 'Home', href: '/', icon: Home },
     { name: 'Developer API', href: '/developer', icon: Code2 },
-    { name: 'Monitoring', href: '/monitoring', icon: Activity },
+    { name: 'Dashboard', href: '/dashboard', icon: Activity },
   ];
 
   return (

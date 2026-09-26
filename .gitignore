@@ -60,10 +60,8 @@ venv.bak/
 
 # Environment Variables
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
 
 # Node / Next.js (Web Frontend)
 web/node_modules/
@@ -108,3 +106,8 @@ Notes/
 *plan*.md
 phase_*.md
 cross_service_logging.md
+
+# Build Artifacts & Agent Files
+*.zip
+.agents/
+scheduler/scheduler_bin

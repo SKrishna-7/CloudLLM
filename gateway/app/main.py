@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router as api_router
+from app.api.admin import router as admin_router
 from prometheus_fastapi_instrumentator import Instrumentator
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.exporter.cloud_trace import CloudTraceSpanExporter
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.sdk.resources import Resource, SERVICE_NAME
 
@@ -13,7 +14,11 @@ resource = Resource(attributes={
     SERVICE_NAME: "fastapi-gateway"
 })
 provider = TracerProvider(resource=resource)
-processor = BatchSpanProcessor(OTLPSpanExporter(endpoint="http://localhost:4318/v1/traces"))
+try:
+    processor = BatchSpanProcessor(CloudTraceSpanExporter())
+except Exception as e:
+    from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+    processor = BatchSpanProcessor(OTLPSpanExporter(endpoint="http://localhost:4318/v1/traces"))
 provider.add_span_processor(processor)
 trace.set_tracer_provider(provider)
 
@@ -36,6 +41,7 @@ app.add_middleware(
 )
 
 app.include_router(api_router)
+app.include_router(admin_router)
 
 Instrumentator().instrument(app).expose(app)
 

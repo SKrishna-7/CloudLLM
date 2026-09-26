@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -67,8 +68,6 @@ func main() {
 		Name: "cloudllm_active_workers",
 		Help: "The total number of active Go scheduler workers",
 	})
-	
-	activeWorkers.Set(5) // Static for now, since we have a fixed pool of 5
 
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
@@ -80,7 +79,7 @@ func main() {
 
 	redisURL := os.Getenv("REDIS_URL")
 	if redisURL == "" {
-		redisURL = "redis://localhost:6380/0"
+		redisURL = "redis://:cloudllm_redis_pass@localhost:6380/0"
 	}
 	webhookURL := os.Getenv("WEBHOOK_URL")
 	if webhookURL == "" {
@@ -123,6 +122,9 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+	
+	// Start DLQ Watchdog
+	consumer.StartWatchdog(ctx, "image_queue")
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
@@ -131,8 +133,16 @@ func main() {
 
 	dispatcher := webhook.NewDispatcher()
 
-	slog.Info("Starting worker pool...")
-	wp := worker.NewPool(5, dispatcher, consumer)
+	workerCount := 5
+	if v := os.Getenv("WORKER_POOL_SIZE"); v != "" {
+		if parsed, err := strconv.Atoi(v); err == nil {
+			workerCount = parsed
+		}
+	}
+	activeWorkers.Set(float64(workerCount))
+
+	slog.Info("Starting worker pool...", "pool_size", workerCount)
+	wp := worker.NewPool(workerCount, dispatcher, consumer)
 	wg := wp.StartPool(ctx, jobChan, webhookURL, workerURL)
 
 	slog.Info("Scheduler is running and workers are ready...")

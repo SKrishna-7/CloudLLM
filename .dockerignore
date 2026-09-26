@@ -1,0 +1,14 @@
+.git
+.env
+.env.local
+.venv
+venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+node_modules
+dist
+build
+Model

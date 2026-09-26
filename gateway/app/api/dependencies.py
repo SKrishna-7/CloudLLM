@@ -23,13 +23,12 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with async_session_maker() as session:
         yield session
 
+# Global Redis client (maintains its own connection pool)
+redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True, max_connections=20)
+
 async def get_redis() -> AsyncGenerator[redis.Redis, None]:
     """Dependency to yield an async Redis client."""
-    redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
-    try:
-        yield redis_client
-    finally:
-        await redis_client.aclose()
+    yield redis_client
 
 import json
 import base64
@@ -83,19 +82,27 @@ async def api_key_auth(
         # Get or Create the user on the fly so they have credits
         user = await db.get(User, user_uuid)
         if not user:
-            user = User(
-                id=user_uuid, 
-                email=email, 
-                credits_balance=50
-            )
-            db.add(user)
-            await db.commit()
-            await db.refresh(user)
+            try:
+                user = User(
+                    id=user_uuid, 
+                    clerk_id=clerk_id,
+                    email=email, 
+                    credits_balance=50
+                )
+                db.add(user)
+                await db.commit()
+                await db.refresh(user)
+            except Exception as e:
+                # Catch IntegrityError when a parallel request creates the user first
+                await db.rollback()
+                user = await db.get(User, user_uuid)
+                if not user:
+                    raise
             
         return user
             
     # Fallback to standard API Key authentication
-    key_hash = hashlib.sha256(api_key.encode("utf-8")).hexdigest()
+    key_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
     
     query = (
         select(APIKey)
@@ -114,3 +121,14 @@ async def api_key_auth(
         )
         
     return api_key_record.user
+
+async def admin_auth(
+    current_user: User = Depends(api_key_auth)
+) -> User:
+    """Dependency to enforce admin or super_admin roles."""
+    if current_user.role not in ["admin", "super_admin"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required"
+        )
+    return current_user
