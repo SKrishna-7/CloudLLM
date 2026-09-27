@@ -112,7 +112,7 @@ func main() {
 		for {
 			select {
 			case <-ticker.C:
-				length, err := client.LLen(context.Background(), "image_queue").Result()
+				length, err := client.LLen(context.Background(), "cloudllm_queue_prod").Result()
 				if err == nil {
 					jobsQueued.Set(float64(length))
 				}
@@ -124,12 +124,12 @@ func main() {
 	defer cancel()
 	
 	// Start DLQ Watchdog
-	consumer.StartWatchdog(ctx, "image_queue")
+	consumer.StartWatchdog(ctx, "cloudllm_queue_prod")
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 	
-	jobChan := consumer.StartPolling(ctx, "image_queue")
+	jobChan := consumer.StartPolling(ctx, "cloudllm_queue_prod")
 
 	dispatcher := webhook.NewDispatcher()
 

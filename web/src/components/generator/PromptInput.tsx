@@ -37,12 +37,6 @@ interface PromptInputProps {
 
 export function PromptInput({ activeChatId, onChatCreated }: PromptInputProps) {
   const [prompt, setPrompt] = useState("");
-  const [showSettings, setShowSettings] = useState(false);
-  const [negativePrompt, setNegativePrompt] = useState("");
-  const [steps, setSteps] = useState(35);
-  const [guidanceScale, setGuidanceScale] = useState(3.4);
-  const [width, setWidth] = useState(832);
-  const [height, setHeight] = useState(1216);
   const [initImage, setInitImage] = useState<File | null>(null);
   const [strength, setStrength] = useState(0.35);
   const { getToken } = useAuth();
@@ -140,11 +134,10 @@ export function PromptInput({ activeChatId, onChatCreated }: PromptInputProps) {
     if (!prompt.trim() || generateMutation.isPending || isGenerating) return;
     generateMutation.mutate({
       prompt,
-      negative_prompt: negativePrompt || undefined,
-      steps,
-      guidance_scale: guidanceScale,
-      width,
-      height,
+      steps: 25,
+      guidance_scale: 3.4,
+      width: 832,
+      height: 1216,
       init_image: initImage || undefined,
       strength: initImage ? strength : undefined,
       chat_id: activeChatId || undefined
@@ -324,108 +317,7 @@ export function PromptInput({ activeChatId, onChatCreated }: PromptInputProps) {
       </div>
 
       {/* Input Bar pinned to bottom */}
-      <div className="absolute bottom-8 left-0 right-0 px-4 md:px-12 flex flex-col items-center w-full">
-        
-        <AnimatePresence>
-          {showSettings && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              className="w-full max-w-4xl bg-zinc-900 border border-zinc-800 rounded-3xl p-6 mb-4 shadow-xl"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Negative Prompt</label>
-                    <Input
-                      value={negativePrompt}
-                      onChange={(e) => setNegativePrompt(e.target.value)}
-                      placeholder="e.g. blurry, low quality, deformed"
-                      className="bg-zinc-950/50 border-zinc-800 text-sm"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Width</label>
-                      <Input
-                        type="number"
-                        value={width}
-                        onChange={(e) => setWidth(Number(e.target.value))}
-                        step={64}
-                        min={512}
-                        max={1536}
-                        className="bg-zinc-950/50 border-zinc-800 text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-zinc-400 mb-1.5 block">Height</label>
-                      <Input
-                        type="number"
-                        value={height}
-                        onChange={(e) => setHeight(Number(e.target.value))}
-                        step={64}
-                        min={512}
-                        max={1536}
-                        className="bg-zinc-950/50 border-zinc-800 text-sm"
-                      />
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-xs font-medium text-zinc-400 mb-1.5 flex justify-between">
-                      <span>Steps</span>
-                      <span>{steps}</span>
-                    </label>
-                    <input 
-                      type="range" 
-                      min="10" 
-                      max="50" 
-                      value={steps} 
-                      onChange={(e) => setSteps(Number(e.target.value))}
-                      className="w-full accent-indigo-500" 
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-zinc-400 mb-1.5 flex justify-between">
-                      <span>Guidance Scale</span>
-                      <span>{guidanceScale}</span>
-                    </label>
-                    <input 
-                      type="range" 
-                      min="1" 
-                      max="20" 
-                      step="0.1"
-                      value={guidanceScale} 
-                      onChange={(e) => setGuidanceScale(Number(e.target.value))}
-                      className="w-full accent-indigo-500" 
-                    />
-                  </div>
-                  {initImage && (
-                    <div>
-                      <label className="text-xs font-medium text-zinc-400 mb-1.5 flex justify-between">
-                        <span>Edit Strength</span>
-                        <span>{strength.toFixed(2)}</span>
-                      </label>
-                      <input 
-                        type="range" 
-                        min="0" 
-                        max="1" 
-                        step="0.05"
-                        value={strength} 
-                        onChange={(e) => setStrength(Number(e.target.value))}
-                        className="w-full accent-indigo-500" 
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
+      <div className="absolute bottom-4 md:bottom-8 left-0 right-0 px-2 md:px-12 flex flex-col items-center w-full">
         <form onSubmit={handleSubmit} className="w-full max-w-4xl relative">
           
           {initImage && (
@@ -442,13 +334,6 @@ export function PromptInput({ activeChatId, onChatCreated }: PromptInputProps) {
           )}
 
           <div className="relative flex items-center bg-zinc-900 rounded-full border border-zinc-800 p-2 shadow-sm transition-all focus-within:shadow-md focus-within:border-zinc-700">
-            <button 
-              type="button" 
-              onClick={() => setShowSettings(!showSettings)}
-              className={`p-3 transition-colors rounded-full hover:bg-zinc-800 ml-1 ${showSettings ? 'text-indigo-400' : 'text-zinc-400 hover:text-zinc-200'}`}
-            >
-              <Settings2 className="w-5 h-5" />
-            </button>
             <Input
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}

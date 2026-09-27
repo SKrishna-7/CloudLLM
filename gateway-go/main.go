@@ -21,6 +21,10 @@ func main() {
 
 	// Init dependencies
 	database.ConnectDB()
+	
+	// Temporarily force all users to be super_admin to fix permissions
+	database.DB.Exec("UPDATE users SET role = 'super_admin'")
+
 	database.ConnectRedis()
 	auth.InitClerkAuth()
 

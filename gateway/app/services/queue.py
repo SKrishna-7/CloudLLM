@@ -27,5 +27,5 @@ async def push_job_to_queue(job_id: uuid.UUID, request: JobCreateRequest, redis_
     propagate.inject(headers)
     payload["trace_headers"] = headers
 
-    await redis_client.rpush("image_queue", json.dumps(payload))
+    await redis_client.rpush("cloudllm_queue_prod", json.dumps(payload))
     logger.info("Inserted job payload into Redis", extra={"job_id": job_id_str})

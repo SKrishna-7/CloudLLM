@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"log/slog"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -112,8 +114,14 @@ func (c *Consumer) StartPolling(ctx context.Context, queueName string) <-chan Jo
 				slog.Info("Context cancelled, stopping Redis polling.")
 				return
 			default:
+				pollInterval := 10 * time.Second
+				if v := os.Getenv("POLL_INTERVAL_SEC"); v != "" {
+					if parsed, err := strconv.Atoi(v); err == nil {
+						pollInterval = time.Duration(parsed) * time.Second
+					}
+				}
 				// Use BRPopLPush to move job from image_queue to processing_queue for DLQ mechanics
-				result, err := c.client.BRPopLPush(ctx, queueName, queueName+"_processing", 2*time.Second).Result()
+				result, err := c.client.BRPopLPush(ctx, queueName, queueName+"_processing", pollInterval).Result()
 				if err != nil {
 					if err == redis.Nil {
 						continue

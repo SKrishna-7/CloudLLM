@@ -53,7 +53,7 @@ func NewPool(count int, dispatcher *webhook.Dispatcher, consumer *broker.Consume
 		dispatcher:  dispatcher,
 		consumer:    consumer,
 		wg:          &sync.WaitGroup{},
-		httpClient:  &http.Client{Timeout: 5 * time.Minute}, // Inference can take some time
+		httpClient:  &http.Client{Timeout: 15 * time.Minute}, // Inference can take up to 10 mins on slower GPUs
 	}
 }
 

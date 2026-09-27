@@ -9,6 +9,6 @@ class Settings(BaseSettings):
     CLERK_JWKS_URL: str = "https://beloved-humpback-2376.clerk.accounts.dev/.well-known/jwks.json"
     WEBHOOK_SECRET: str = "super_secret_webhook_key_for_local_dev"
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 settings = Settings()
