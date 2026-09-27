@@ -350,7 +350,6 @@ export function PromptInput({ activeChatId, onChatCreated }: PromptInputProps) {
               onChange={(e) => {
                 if (e.target.files && e.target.files[0]) {
                   setInitImage(e.target.files[0]);
-                  setShowSettings(true);
                 }
               }} 
             />
