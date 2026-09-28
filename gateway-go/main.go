@@ -1,17 +1,21 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/ansrivas/fiberprometheus/v2"
+	"github.com/gofiber/contrib/otelfiber/v2"
 	"github.com/joho/godotenv"
 
 	"github.com/suresh-krishnan-s/cloudllm/gateway-go/auth"
 	"github.com/suresh-krishnan-s/cloudllm/gateway-go/database"
 	"github.com/suresh-krishnan-s/cloudllm/gateway-go/routes"
+	"github.com/suresh-krishnan-s/cloudllm/gateway-go/telemetry"
 )
 
 func main() {
@@ -28,9 +32,28 @@ func main() {
 	database.ConnectRedis()
 	auth.InitClerkAuth()
 
+	// Initialize OpenTelemetry Tracer
+	tp, err := telemetry.InitTracer("go-gateway")
+	if err != nil {
+		log.Fatalf("failed to initialize tracer: %v", err)
+	}
+	defer func() {
+		if err := tp.Shutdown(context.Background()); err != nil {
+			log.Printf("Error shutting down tracer provider: %v", err)
+		}
+	}()
+
 	app := fiber.New(fiber.Config{
 		AppName: "CloudLLM Go Gateway",
 	})
+
+	// Add OpenTelemetry middleware
+	app.Use(otelfiber.Middleware())
+
+	// Add Prometheus middleware
+	prometheus := fiberprometheus.New("go_gateway")
+	prometheus.RegisterAt(app, "/metrics")
+	app.Use(prometheus.Middleware)
 
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{
