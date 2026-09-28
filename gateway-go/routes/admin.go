@@ -329,7 +329,10 @@ func GetTelemetry(c *fiber.Ctx) error {
 	end := c.Query("end")
 	step := c.Query("step")
 	
-	prometheusURL := "http://localhost:9091/api/v1"
+	prometheusURL := os.Getenv("PROMETHEUS_URL")
+	if prometheusURL == "" {
+		prometheusURL = "http://localhost:9091/api/v1"
+	}
 
 	var reqURL string
 	if start != "" && end != "" && step != "" {
