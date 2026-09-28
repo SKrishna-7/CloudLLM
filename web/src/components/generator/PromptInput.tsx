@@ -60,7 +60,8 @@ export function PromptInput({ activeChatId, onChatCreated }: PromptInputProps) {
         (job: any) => {
           if (job.status !== "queued" && job.status !== "processing") return false;
           if (!job.created_at) return true;
-          const createdAt = new Date(job.created_at).getTime();
+          const dateStr = job.created_at.endsWith('Z') ? job.created_at : job.created_at + 'Z';
+          const createdAt = new Date(dateStr).getTime();
           return (Date.now() - createdAt) <= 10 * 60 * 1000;
         }
       );
@@ -109,7 +110,8 @@ export function PromptInput({ activeChatId, onChatCreated }: PromptInputProps) {
   const isJobStuck = (job: any) => {
     if (job.status === "completed" || job.status === "failed") return false;
     if (!job.created_at) return false;
-    const createdAt = new Date(job.created_at).getTime();
+    const dateStr = job.created_at.endsWith('Z') ? job.created_at : job.created_at + 'Z';
+    const createdAt = new Date(dateStr).getTime();
     return (Date.now() - createdAt) > 10 * 60 * 1000; // 10 minutes timeout
   };
 
